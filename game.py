@@ -2,7 +2,7 @@ from configparser import ConfigParser
 from eventLoop import EventLoop
 from block import Block, CoinBlock, QuestionBlock
 from pipe import Pipe
-from coin import Coin
+from coins import Coin
 from decoration import Decoration
 from maps import load_world_map
 from mario import Mario
@@ -14,7 +14,6 @@ import pygame
 
 
 class Game:
-    """Represents the game and its related methods for running"""
     def __init__(self):
         pygame.init()
         config = ConfigParser()     # parse settings file
@@ -59,7 +58,6 @@ class Game:
         print(self.map_layer.view_rect.center)
 
     def retrieve_map_data(self, data_layer_name):
-        """Retrieve map data if it exists in the game's current map, otherwise return an empty list"""
         try:
             data = self.tmx_data.get_layer_by_name(data_layer_name)
         except ValueError:
@@ -67,8 +65,7 @@ class Game:
         return data
 
     def init_world(self, map_name='world1', spawn='player', reset=True):
-        """Load the initial world for the game"""
-        self.tmx_data, self.map_layer, self.map_group = load_world_map('map/' + map_name + '.tmx', self.screen)
+        self.tmx_data, self.map_layer, self.map_group = load_world_map('images/' + map_name + '.tmx', self.screen)
         self.player_spawn = self.tmx_data.get_object_by_name(spawn)  # get player spawn object from map data
         self.init_game_objects()
         self.map_layer.center((self.player_spawn.x, self.player_spawn.y))
@@ -80,7 +77,6 @@ class Game:
             self.mario.rect.x, self.mario.rect.y = self.player_spawn.x, self.player_spawn.y
 
     def handle_pipe(self):
-        """Handle Mario traveling through a pipe"""
         keys_pressed = pygame.key.get_pressed()
         if keys_pressed[pygame.K_DOWN] is 1:
             for pipe in self.game_objects['pipes']:
@@ -100,7 +96,6 @@ class Game:
                     pygame.mixer.music.play(-1)
 
     def check_stage_clear(self):
-        """Check if Mario has cleared the stage"""
         for rect in self.game_objects['win-zone']:
             if rect.colliderect(self.mario.rect):
                 pygame.mixer.music.load('audio/End-Clear-Stage.wav')
@@ -109,7 +104,6 @@ class Game:
                 self.game_won = True
 
     def init_game_objects(self):
-        """Create all game objects in memory by extracting them from the map file"""
         self.game_objects = {
             'floors': [],
             'blocks': pygame.sprite.Group(),
@@ -167,7 +161,6 @@ class Game:
             self.map_group.add(Decoration(bg.x, bg.y, bg.image))
 
     def prep_enemies(self):
-        """Prepare the enemy sprites"""
         # may not be necessary if passing game_objects dictionary as a whole
         #  to Mario instead of passing individual groups
         enemy_spawn_data = self.retrieve_map_data('enemy-spawns')
@@ -188,7 +181,6 @@ class Game:
             self.map_group.add(enemy)
 
     def set_paused(self, event):
-        """Set the game state to paused based on key press"""
         key = event.key
         if key == pygame.K_p:
             self.paused = not self.paused
@@ -196,7 +188,6 @@ class Game:
             pygame.mixer.music.play()
 
     def update(self):
-        """Update the screen and any objects that require individual updates"""
         if not self.paused and self.game_active:
             for block in self.game_objects['blocks']:
                 points = block.check_hit(other=self.mario)
@@ -241,7 +232,6 @@ class Game:
         pygame.display.flip()
 
     def check_timer(self):
-        """Check the game timer and update it if necessary"""
         if not self.paused:
             time = pygame.time.get_ticks()
             if time - self.last_tick > 600 and self.timer > 0:
@@ -256,7 +246,6 @@ class Game:
         self.stats.update(str(score), str(self.coins), str('1-1'), str(self.timer), str(self.lives))
 
     def handle_player_killed(self):
-        """Handle the player being killed in game"""
         self.lives -= 1
         if self.lives > 0:
             self.init_world()
@@ -265,7 +254,6 @@ class Game:
             self.game_active = False
 
     def run(self):
-        """Run the application loop so that the menu can be displayed and the game started"""
         loop = EventLoop(loop_running=True, actions=self.menu.action_map)
 
         while True:
@@ -282,7 +270,6 @@ class Game:
                 self.init_world()
 
     def start_game(self):
-        """Launch the game and begin checking for events"""
         loop = EventLoop(loop_running=True, actions=self.action_map)
         self.score = 0
         self.lives = 3

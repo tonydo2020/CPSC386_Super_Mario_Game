@@ -3,11 +3,11 @@ from pygame import image, time
 
 class Animate:
     def __init__(self, image_list, delay=150, repeat=True):
-        self.image = []
+        self.images = []
         for image_file in image_list:
-            if isinstance(image_file, str):
+            if isinstance(image_file, str):     # needs to be loaded
                 self.images.append(image.load(image_file))
-            else:
+            else:       # already loaded
                 self.images.append(image_file)
         self.image_index = 0
         self.last_frame = time.get_ticks()

@@ -1,5 +1,5 @@
 from animate import Animate
-from coin import Coin
+from coins import Coin
 from items import Mushroom, FireFlower, StarMan, OneUp
 from pygame import image
 from pygame import mixer
@@ -7,7 +7,6 @@ from pygame.sprite import Sprite
 
 
 class Block(Sprite):
-    """Generic sprite for a block/wall"""
     def __init__(self, x, y, initial_image, screen):
         super(Block, self).__init__()
         self.image = initial_image
@@ -19,12 +18,10 @@ class Block(Sprite):
         pass
 
     def blit(self):
-        """Blit the block to the screen"""
         self.screen.blit(self.image, self.rect)
 
 
 class BlockRubble(Sprite):
-    """Sprite for pieces of a destroyed block"""
     def __init__(self, x, y, initial_image, speed_x, speed_y, screen):
         super(BlockRubble, self).__init__()
         self.image = initial_image
@@ -45,7 +42,6 @@ class BlockRubble(Sprite):
 
 
 class CoinBlock(Block):
-    """A block which contains a number of items"""
     STD_STATE = 'std'
     HIT_STATE = 'hit'
     MOVE_UP_STATE = 'move-up'
@@ -55,7 +51,7 @@ class CoinBlock(Block):
                  sound=None):
         super(CoinBlock, self).__init__(x, y, initial_image, screen)
         self.coin_counter = int(coins)
-        self.blank_img = image.load('map/super-mario-empty-block.png') if self.coin_counter > 0 else None
+        self.blank_img = image.load('images/super-mario-empty-block.png') if self.coin_counter > 0 else None
         self.coins = []
         self.sound = sound if sound else mixer.Sound('audio/Coin.wav')
         self.break_sound = mixer.Sound('audio/Break-block.wav')
@@ -105,7 +101,7 @@ class CoinBlock(Block):
                     self.sound.play()
                     return n_coin.points
                 elif self.rubble_group is not None and other.state_info['big']:
-                    rubble_img = image.load('images/environment/super-mario-bricks-rubble.png')
+                    rubble_img = image.load('images/super-mario-bricks-rubble.png')
                     speeds = [(-15, 5), (-10, 5), (10, 5), (15, 5)]
                     for speed in speeds:
                         rubble = BlockRubble(self.rect.x, self.rect.y, rubble_img, speed[0], speed[1], self.screen)
@@ -154,7 +150,7 @@ class QuestionBlock(CoinBlock):
 
     def __init__(self, x, y, screen, map_group, game_objects, item=MUSHROOM, static_img=None):
         if not static_img:
-            images = ['map/Question-Block-1.png', 'map/Question-Block-2.png', 'map/Question-Block-3.png']
+            images = ['images/Question-Block-1.png', 'images/Question-Block-2.png', 'images/Question-Block-3.png']
             self.animator = Animate(images)
             initial_image = self.animator.get_image()
         else:
@@ -162,7 +158,7 @@ class QuestionBlock(CoinBlock):
             self.animator = None
         self.game_objects = game_objects
         if item in (QuestionBlock.MUSHROOM, QuestionBlock.FIRE_FLOWER, QuestionBlock.STARMAN, QuestionBlock.ONE_UP):
-            self.item = item    # TODO: items
+            self.item = item
             coins = None
         else:
             self.item = None
@@ -170,7 +166,7 @@ class QuestionBlock(CoinBlock):
         super(QuestionBlock, self).__init__(x, y, initial_image, screen, map_group, coins=coins if coins else 0)
         if self.item:
             self.sound = mixer.Sound('audio/Powerup-Appear.wav')
-        self.blank_img = image.load('map/super-mario-empty-block.png')  # force blank image
+        self.blank_img = image.load('images/super-mario-empty-block.png')  # force blank image
         self.state['blank'] = False
 
     @classmethod

@@ -83,7 +83,6 @@ class GameStats:
         print(str(temp))
 
     def update(self, s_num, c_num, w_num, t_num, l_num):
-        """ADD UPDATING VARIABLES"""
         self.SNumber = self.font.render(s_num, True, WHITE)
         self.snRect = self.SNumber.get_rect()
         self.snRect.center = self.sRect.center

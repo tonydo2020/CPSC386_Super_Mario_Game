@@ -1,5 +1,5 @@
 import pygame
-from animate import Animator
+from animate import Animate
 from pygame.sprite import Sprite
 
 ENEMY_DIRECTION = -1
@@ -24,7 +24,6 @@ class Enemy(Sprite):
         self.death_animation_frame = 0
         self.last_frame = 0
 
-        """CHANGE TO -1 TO START LEFT"""
         self.ENEMY_DIRECTION = ENEMY_DIRECTION
         self.ENEMY_SPEED = ENEMY_SPEED
         self.ENEMY_GRAVITY = ENEMY_GRAVITY
@@ -46,13 +45,12 @@ class Enemy(Sprite):
 
     @staticmethod
     def img_file(name, length, width):
-        file = 'images/enemies/koopa/' + name + '.png'
+        file = 'images/' + name + '.png'
         file = pygame.image.load(file)
         file = pygame.transform.scale(file, (length, width))
         return file
 
     def check_player_collision(self):
-        """Checks collisions with Mario"""
         if self.rect.colliderect(self.player.rect):
             # pts = [self.rect.topleft, self.rect.midtop, self.rect.topright]
             pts = []
@@ -67,7 +65,6 @@ class Enemy(Sprite):
             return True
 
     def set_killed(self):
-        """Set the enemy's status to killed by the player"""
         self.player_enemy_kill = True
         self.last_frame = pygame.time.get_ticks()
         self.shell_mode = True
@@ -79,7 +76,6 @@ class Enemy(Sprite):
             self.enemy_block_collide_flag = True
             self.ENEMY_DIRECTION *= -1
             return True
-        """NEED TO CHECK FOR IF MARIO HITS BLOCK KILLING ENEMY"""
         for block_rect in self.block:
             if self.rect.contains(block_rect.rect):
                 self.ENEMY_DIRECTION = abs(self.ENEMY_DIRECTION) * -1
@@ -89,7 +85,6 @@ class Enemy(Sprite):
                 return True
 
     def check_friendly_collision(self):
-        """FIX ENEMY COLLIDING WITH SELF"""
         # Check for collisions with friendly or koopa shell
         for goomba_rect in self.goombas:
             if goomba_rect is not self and self.rect.colliderect(goomba_rect.rect) and not goomba_rect.dead:
@@ -159,12 +154,12 @@ class Enemy(Sprite):
 
 class Goomba(Enemy):
     def __init__(self, screen, x, y, player, floor, block, goombas, koopas):
-        self.walk_images = ['images/enemies/goomba/GoombaLeftBoot.png',
-                            'images/enemies/goomba/GoombaRightBoot.png']
-        self.upside_down_images = ['images/enemies/goomba/GoombaUD1.png',
-                                   'images/enemies/goomba/GoombaUD2.png']
-        self.crushed_images = ['images/enemies/goomba/GoombaCrushed.png']
-        self.animator = Animator(self.walk_images)
+        self.walk_images = ['images/GoombaLeftBoot.png',
+                            'images/GoombaRightBoot.png']
+        self.upside_down_images = ['images/GoombaUD1.png',
+                                   'images/GoombaUD2.png']
+        self.crushed_images = ['images/GoombaCrushed.png']
+        self.animator = Animate(self.walk_images)
         image = self.animator.get_image()
         super().__init__(screen, image, x, y, player, floor, block, goombas, koopas)
 
@@ -174,7 +169,7 @@ class Goomba(Enemy):
         print(str(time))
         print(str(self.last_frame))
         # Animate and keep on screen for half a second before killing sprite
-        self.animator = Animator(self.crushed_images)
+        self.animator = Animate(self.crushed_images)
         if abs(time - self.last_frame) > 1000:
             self.player.score += 100
             self.kill()
@@ -188,9 +183,8 @@ class Goomba(Enemy):
             self.rect.y += (abs(self.ENEMY_DIRECTION) * self.ENEMY_SPEED * -1)
         # After two seconds fall down while upside down
         if self.death_animation_frame == 0 and abs(self.last_frame - time) > 2000:
-            self.animator = Animator(self.upside_down_images)
+            self.animator = Animate(self.upside_down_images)
             self.death_animation_frame += 1
-        """MIGHT BE REDUNDANT WITH CHECK BOUNDARY"""
         # Kill off after 10 seconds (Enough to be off screen)
         if abs(self.last_frame - time) > 10000:
             self.player.score += 100
@@ -274,7 +268,7 @@ class Koopa(Enemy):
         self.UD_death_images = [self.name_1]
         self.name_1 = Enemy.img_file('KoopaLegs', 35, 30)
         self.feet_images = [self.name_1]
-        self.animator = Animator(self.left_images)
+        self.animator = Animate(self.left_images)
         image = self.animator.get_image()
         super().__init__(screen, image, x, y, player, floor, block, goombas, koopas)
         self.collision_flag = False
@@ -290,9 +284,8 @@ class Koopa(Enemy):
             self.rect.y += (abs(self.ENEMY_DIRECTION) * self.ENEMY_SPEED * -1)
         # After two seconds fall down while upside down
         if self.death_animation_frame == 0 and abs(self.last_frame - time) > 2000:
-            self.animator = Animator(self.UD_death_images)
+            self.animator = Animate(self.UD_death_images)
             self.death_animation_frame += 1
-        """MIGHT BE REDUNDANT WITH CHECK BOUNDARY"""
         # Kill off after 10 seconds (Enough to be off screen)
         if abs(self.last_frame - time) > 10000:
             self.player.score += 100
@@ -308,7 +301,6 @@ class Koopa(Enemy):
             return True
 
     def koopa_physics(self):
-        """USE MARIO CURRENT POSITION TO GET LEFT OF SCREEN"""
         self.check_boundary()
 
         if not self.check_floor() and self.start_movement:
@@ -325,7 +317,7 @@ class Koopa(Enemy):
                 time = pygame.time.get_ticks()
                 # Only put in shell if needed
                 if self.death_animation_frame == 0:
-                    self.animator = Animator(self.death_images)
+                    self.animator = Animate(self.death_images)
                     self.image = self.animator.get_image()
                     tempx, tempy = self.rect.x, self.rect.y
                     self.rect = self.image.get_rect()
@@ -352,13 +344,13 @@ class Koopa(Enemy):
                 if not self.check_player_shell_collision() and abs(self.last_frame - time) > 8000 and not\
                         self.shell_movement:
                     if self.counter == 0:
-                        self.animator = Animator(self.feet_images)
+                        self.animator = Animate(self.feet_images)
                         self.feet_frame = pygame.time.get_ticks()
                         self.counter += 1
                     if abs(self.feet_frame - time) > 3000:
                         self.counter = 0
                         self.ENEMY_DIRECTION = abs(self.ENEMY_DIRECTION) * -1
-                        self.animator = Animator(self.left_images)
+                        self.animator = Animate(self.left_images)
                         self.enemy_player_collide_flag = False
                         self.shell_mode = False
             # Collision with map or block

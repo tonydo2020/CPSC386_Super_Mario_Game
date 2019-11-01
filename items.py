@@ -1,12 +1,10 @@
-from animate import Animator
+from animate import Animate
 from pygame.sprite import Sprite, Group, collide_rect
 from pygame import image as pygimg
 from pygame import time, transform
-# TODO: Additional item types
 
 
 class Item(Sprite):
-    """Represents a generic item object in the mario game"""
     MUSHROOM = 'mushroom'
     ONE_UP = '1-up'
     FIRE_FLOWER = 'fire-flower'
@@ -15,7 +13,7 @@ class Item(Sprite):
     def __init__(self, x, y, image, speed, obstacles, floor, item_type, rise_from=None, animated=False):
         super(Item, self).__init__()
         if animated:
-            self.animator = Animator(image)
+            self.animator = Animate(image)
             self.image = self.animator.get_image()
         else:
             self.animator = None
@@ -30,7 +28,6 @@ class Item(Sprite):
         self.rise_from = rise_from
 
     def rise(self):
-        """Have the item rise up from another object"""
         if not self.rise_from:
             raise ValueError('Cannot rise from an object when that object is None')
         if self.rect.bottom <= self.rise_from.rect.top:
@@ -39,19 +36,16 @@ class Item(Sprite):
             self.rect.bottom -= 2
 
     def jump(self):
-        """Have the item jump into the air"""
         if self.speed >= 0:
             self.jump_speed = -(self.speed * 5)
         else:
             self.jump_speed = (self.speed * 5)
 
     def flip_direction(self):
-        """Flip the direction the item is moving on the x-axis"""
         self.speed = -self.speed
         self.rect.left += self.speed
 
     def bounce_off_obstacles(self):
-        """Check if the item has hit any obstacles which cause it to bounce the other direction"""
         for obs in self.obstacles:
             pts = [obs.rect.bottomleft, obs.rect.midleft,
                    obs.rect.bottomright, obs.rect.midright]
@@ -69,7 +63,6 @@ class Item(Sprite):
                     return
 
     def fall(self):
-        """If the item is not supported by any floor rects, then fall down"""
         falling = True
         for rect in self.floor:
             # check if bottom is at the top of the floor rect and that the x pos is within floor area
@@ -90,7 +83,6 @@ class Item(Sprite):
             self.rect.bottom += abs(self.speed)
 
     def update(self):
-        """Update the item position based on its speed variables"""
         if self.animator:
             self.image = self.animator.get_image()
         if not self.rise_from:
@@ -105,38 +97,34 @@ class Item(Sprite):
 
 
 class Mushroom(Item):
-    """A mushroom power-up which can be picked up by Mario, causing size increase"""
     def __init__(self, x, y, obstacles, floor, rise_from=None):
-        image = pygimg.load('map/mushroom.png')
+        image = pygimg.load('images/mushroom.png')
         speed = 2
         super(Mushroom, self).__init__(x, y, image, speed, obstacles, floor,
                                        Item.MUSHROOM, rise_from, animated=False)
 
 
 class OneUp(Item):
-    """A special mushroom which is meant to add an extra life on pickup"""
     def __init__(self, x, y, obstacles, floor, rise_from=None):
-        image = pygimg.load('map/mushroom-1-up.png')
+        image = pygimg.load('images/mushroom-1-up.png')
         speed = 2
         super(OneUp, self).__init__(x, y, image, speed, obstacles, floor,
                                     Item.ONE_UP, rise_from, animated=False)
 
 
 class FireFlower(Item):
-    """A fire flower item which can be picked up by Mario, giving the ability to throw fire balls"""
     def __init__(self, x, y, obstacles, floor, rise_from=None):
-        images = [pygimg.load('map/fire-flower-1.png'), pygimg.load('map/fire-flower-2.png'),
-                  pygimg.load('map/fire-flower-3.png'), pygimg.load('map/fire-flower-4.png')]
+        images = [pygimg.load('images/fire-flower-1.png'), pygimg.load('images/fire-flower-2.png'),
+                  pygimg.load('images/fire-flower-3.png'), pygimg.load('images/fire-flower-4.png')]
         speed = 0
         super(FireFlower, self).__init__(x, y, images, speed, obstacles,
                                          floor, Item.FIRE_FLOWER, rise_from, True)
 
 
 class StarMan(Item):
-    """A 'star-man' item which can be picked up by Mario, causing invincibility"""
     def __init__(self, x, y, obstacles, floor, rise_from=None):
-        images = [pygimg.load('map/starman-1.png'), pygimg.load('map/starman-2.png'),
-                  pygimg.load('map/starman-3.png'), pygimg.load('map/starman-4.png')]
+        images = [pygimg.load('images/starman-1.png'), pygimg.load('images/starman-2.png'),
+                  pygimg.load('images/starman-3.png'), pygimg.load('images/starman-4.png')]
         speed = 2
         self.last_jump = time.get_ticks()
         self.jump_interval = 1000   # jump around every second
@@ -156,10 +144,9 @@ class StarMan(Item):
 
 
 class FireBall(Sprite):
-    """A fireball which can be thrown from Mario when he is in his fire flower state"""
     def __init__(self, x, y, norm_images, explode_images, obstacles, floor, goomba, koopa, speed=5):
-        self.norm_animator = Animator(norm_images)
-        self.explode_animator = Animator(explode_images, repeat=False)
+        self.norm_animator = Animate(norm_images)
+        self.explode_animator = Animate(explode_images, repeat=False)
         self.image = self.norm_animator.get_image()
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = x, y
@@ -172,7 +159,6 @@ class FireBall(Sprite):
         super(FireBall, self).__init__()
 
     def check_hit_wall(self):
-        """Check if the fireball has hit any walls"""
         for obs in self.obstacles:
             pts = [obs.rect.midleft, obs.rect.midright, obs.rect.bottomleft, obs.rect.bottomright]
             for pt in pts:
@@ -187,9 +173,8 @@ class FireBall(Sprite):
                     return
 
     def check_hit_enemies(self):
-        """Check if the fireball has hit any enemies"""
         for g_enemy in self.goomba:
-            if collide_rect(self, g_enemy):     # FIXME: change kill() when animation works
+            if collide_rect(self, g_enemy):
                 g_enemy.kill()
                 self.active = False
                 return
@@ -200,7 +185,6 @@ class FireBall(Sprite):
                 return
 
     def apply_gravity(self):
-        """Apply gravity to the fireball, bounce off of horizontal side of surfaces"""
         bounce = False
         for obs in self.obstacles:
             pts = [obs.rect.topleft, obs.rect.midtop, obs.rect.topright]
@@ -223,7 +207,6 @@ class FireBall(Sprite):
         self.rect.y += self.speed_y
 
     def update(self):
-        """Update the position of the fireball"""
         if self.active:
             self.rect.x += self.speed_x
             self.apply_gravity()
@@ -237,7 +220,6 @@ class FireBall(Sprite):
 
 
 class FireBallController:
-    """Manages fireballs and provides an interface for using them"""
     def __init__(self, screen, map_group, obstacles, floor, origin, goomba, koopa):
         self.screen = screen
         self.origin = origin
@@ -246,16 +228,15 @@ class FireBallController:
         self.floor = floor
         self.goomba, self.koopa = goomba, koopa
         self.fireballs = Group()
-        self.fb_images = [pygimg.load('map/super_mario_fireball_1.png'), pygimg.load('map/super_mario_fireball_2.png'),
-                          pygimg.load('map/super_mario_fireball_3.png'), pygimg.load('map/super_mario_fireball_4.png')]
-        self.exp_images = [pygimg.load('map/super_mario_fireball_explode_1.png'),
-                           pygimg.load('map/super_mario_fireball_explode_2.png'),
-                           pygimg.load('map/super_mario_fireball_explode_3.png')]
+        self.fb_images = [pygimg.load('images/super_mario_fireball_1.png'), pygimg.load('images/super_mario_fireball_2.png'),
+                          pygimg.load('images/super_mario_fireball_3.png'), pygimg.load('images/super_mario_fireball_4.png')]
+        self.exp_images = [pygimg.load('images/super_mario_fireball_explode_1.png'),
+                           pygimg.load('images/super_mario_fireball_explode_2.png'),
+                           pygimg.load('images/super_mario_fireball_explode_3.png')]
         self.fb_images = [transform.scale(img, (16, 16)) for img in self.fb_images]
         self.exp_images = [transform.scale(img, (16, 16)) for img in self.exp_images]
 
     def throw_fireball(self):
-        """If there are not two fireballs already active, then throw a new fireball"""
         if len(self.fireballs) < 2:
             if self.origin.state_info['facing_right']:
                 n_fireball = FireBall(self.origin.rect.topright[0], self.origin.rect.topright[1], self.fb_images,
@@ -269,7 +250,6 @@ class FireBallController:
         return False
 
     def update_fireballs(self):
-        """Update all fireballs currently in play"""
         self.fireballs.update()
         for fb in self.fireballs:
             if fb.rect.x < (self.origin.rect.x - self.screen.get_width()) or \
