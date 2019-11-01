@@ -3,6 +3,7 @@ from sys import exit
 
 
 class EventLoop:
+    # logic for game
     def __init__(self, loop_running=False, actions=None, extra_actions=None):
         self.action_map = {pygame.QUIT: exit, }
         if isinstance(actions, dict):
@@ -11,6 +12,7 @@ class EventLoop:
         self.loop_running = loop_running
 
     def check_events(self):
+        # checks event
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.action_map[event.type]()   # quit game with no argument passed

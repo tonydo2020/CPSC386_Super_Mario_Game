@@ -7,6 +7,7 @@ from pygame.sprite import Sprite
 
 
 class Block(Sprite):
+    # clock sprite
     def __init__(self, x, y, initial_image, screen):
         super(Block, self).__init__()
         self.image = initial_image
@@ -18,10 +19,12 @@ class Block(Sprite):
         pass
 
     def blit(self):
+        # blit block to screen
         self.screen.blit(self.image, self.rect)
 
 
 class BlockRubble(Sprite):
+    # sprite for a block that was destroyed
     def __init__(self, x, y, initial_image, speed_x, speed_y, screen):
         super(BlockRubble, self).__init__()
         self.image = initial_image
@@ -42,6 +45,7 @@ class BlockRubble(Sprite):
 
 
 class CoinBlock(Block):
+    # block that contains several items
     STD_STATE = 'std'
     HIT_STATE = 'hit'
     MOVE_UP_STATE = 'move-up'
@@ -71,14 +75,17 @@ class CoinBlock(Block):
 
     @classmethod
     def coin_block_from_tmx_obj(cls, obj, screen, map_group, game_objects):
+        # creates coinblock from tmx
         return cls(obj.x, obj.y, obj.image, screen, map_group, coins=obj.properties.get('coins', 0),
                    allow_hits=obj.properties.get('allow_hits', False), rubble_group=game_objects['rubble'])
 
     def set_blank(self):
+        # sets the block to be blank
         self.state['blank'] = True
         self.allow_hits = False
 
     def check_hit(self, other):
+        # checks if the block has been hit
         if not self.state['blank'] or self.allow_hits:
             hit = False
             if self.rect.collidepoint(other.rect.midtop):
@@ -111,6 +118,7 @@ class CoinBlock(Block):
                     self.kill()
 
     def update_coins(self):
+        # updates the coin above the block
         remove = []
         for coin_num in range(len(self.coins)):
             self.coins[coin_num][0].update()
@@ -124,6 +132,7 @@ class CoinBlock(Block):
                 del self.coins[num]
 
     def update(self):
+        # updates block location and coin location
         if self.state['meta'] == CoinBlock.HIT_STATE:
             if self.state['move-state'] == CoinBlock.MOVE_UP_STATE:
                 if self.rect.top <= self.hit_location:
@@ -143,6 +152,7 @@ class CoinBlock(Block):
 
 
 class QuestionBlock(CoinBlock):
+    # random item block
     MUSHROOM = 'mushroom'
     ONE_UP = '1-up'
     FIRE_FLOWER = 'fire-flower'
@@ -171,6 +181,7 @@ class QuestionBlock(CoinBlock):
 
     @classmethod
     def q_block_from_tmx_obj(cls, obj, screen, map_group, game_objects):
+        # creates a question mark box
         item_type = obj.properties.get('item', None)
         if obj.properties.get('invisible', None):
             return cls(obj.x, obj.y, screen, map_group, game_objects, item_type, static_img=obj.image)
@@ -197,6 +208,7 @@ class QuestionBlock(CoinBlock):
             return points
 
     def update(self):
+        # updates the question block
         if not self.state['blank'] and self.animator:
             self.image = self.animator.get_image()
         elif self.state['blank']:

@@ -3,6 +3,7 @@ import json
 
 
 class Logo(sprite.Sprite):
+    # logo on title screen
     def __init__(self, screen):
         self.screen = screen
         self.image = image.load('images/Super-Mario-Logo.png')
@@ -11,6 +12,7 @@ class Logo(sprite.Sprite):
         super(Logo, self).__init__()
 
     def position(self):
+        # position the logo on the screen
         self.rect.centerx = int(self.screen.get_width() * 0.5)
         self.rect.centery = int(self.screen.get_height() * 0.4)
 
@@ -19,6 +21,7 @@ class Logo(sprite.Sprite):
 
 
 class TextDisplay(sprite.Sprite):
+    # text on the title screen
     def __init__(self, x, y, text, screen, size=24):
         self.text = text
         self.font = font.Font('fonts/PressStart2P-Regular.ttf', size)

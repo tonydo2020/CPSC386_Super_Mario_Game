@@ -42,10 +42,12 @@ class Item(Sprite):
             self.jump_speed = (self.speed * 5)
 
     def flip_direction(self):
+        # make the item go in the opposite direction
         self.speed = -self.speed
         self.rect.left += self.speed
 
     def bounce_off_obstacles(self):
+        # checks if the item has hit any obstacles
         for obs in self.obstacles:
             pts = [obs.rect.bottomleft, obs.rect.midleft,
                    obs.rect.bottomright, obs.rect.midright]
@@ -63,6 +65,7 @@ class Item(Sprite):
                     return
 
     def fall(self):
+        # makes the item fall through gaps in the ground
         falling = True
         for rect in self.floor:
             # check if bottom is at the top of the floor rect and that the x pos is within floor area
@@ -83,6 +86,7 @@ class Item(Sprite):
             self.rect.bottom += abs(self.speed)
 
     def update(self):
+        # updates item position
         if self.animator:
             self.image = self.animator.get_image()
         if not self.rise_from:
@@ -97,6 +101,7 @@ class Item(Sprite):
 
 
 class Mushroom(Item):
+    # mushroom powerup
     def __init__(self, x, y, obstacles, floor, rise_from=None):
         image = pygimg.load('images/mushroom.png')
         speed = 2
@@ -105,6 +110,7 @@ class Mushroom(Item):
 
 
 class OneUp(Item):
+    # gives mario extra life
     def __init__(self, x, y, obstacles, floor, rise_from=None):
         image = pygimg.load('images/mushroom-1-up.png')
         speed = 2
@@ -113,6 +119,7 @@ class OneUp(Item):
 
 
 class FireFlower(Item):
+    # gives mario fire powers
     def __init__(self, x, y, obstacles, floor, rise_from=None):
         images = [pygimg.load('images/fire-flower-1.png'), pygimg.load('images/fire-flower-2.png'),
                   pygimg.load('images/fire-flower-3.png'), pygimg.load('images/fire-flower-4.png')]
@@ -122,6 +129,7 @@ class FireFlower(Item):
 
 
 class StarMan(Item):
+    # star item that gives invincibility for a few seconds
     def __init__(self, x, y, obstacles, floor, rise_from=None):
         images = [pygimg.load('images/starman-1.png'), pygimg.load('images/starman-2.png'),
                   pygimg.load('images/starman-3.png'), pygimg.load('images/starman-4.png')]
@@ -144,6 +152,7 @@ class StarMan(Item):
 
 
 class FireBall(Sprite):
+    # sprite for the fireball
     def __init__(self, x, y, norm_images, explode_images, obstacles, floor, goomba, koopa, speed=5):
         self.norm_animator = Animate(norm_images)
         self.explode_animator = Animate(explode_images, repeat=False)
@@ -159,6 +168,7 @@ class FireBall(Sprite):
         super(FireBall, self).__init__()
 
     def check_hit_wall(self):
+        # checks if fireball hits wall
         for obs in self.obstacles:
             pts = [obs.rect.midleft, obs.rect.midright, obs.rect.bottomleft, obs.rect.bottomright]
             for pt in pts:
@@ -173,6 +183,7 @@ class FireBall(Sprite):
                     return
 
     def check_hit_enemies(self):
+        # checks if fireball hits enemy
         for g_enemy in self.goomba:
             if collide_rect(self, g_enemy):
                 g_enemy.kill()
@@ -185,6 +196,7 @@ class FireBall(Sprite):
                 return
 
     def apply_gravity(self):
+        # gravity to the fireball
         bounce = False
         for obs in self.obstacles:
             pts = [obs.rect.topleft, obs.rect.midtop, obs.rect.topright]
@@ -207,6 +219,7 @@ class FireBall(Sprite):
         self.rect.y += self.speed_y
 
     def update(self):
+        # updates position of fireball
         if self.active:
             self.rect.x += self.speed_x
             self.apply_gravity()
@@ -220,6 +233,7 @@ class FireBall(Sprite):
 
 
 class FireBallController:
+    # controls fireballs
     def __init__(self, screen, map_group, obstacles, floor, origin, goomba, koopa):
         self.screen = screen
         self.origin = origin
@@ -237,6 +251,7 @@ class FireBallController:
         self.exp_images = [transform.scale(img, (16, 16)) for img in self.exp_images]
 
     def throw_fireball(self):
+        # throws fireball if there are less than 2
         if len(self.fireballs) < 2:
             if self.origin.state_info['facing_right']:
                 n_fireball = FireBall(self.origin.rect.topright[0], self.origin.rect.topright[1], self.fb_images,
@@ -250,6 +265,7 @@ class FireBallController:
         return False
 
     def update_fireballs(self):
+        # updates all fireballs
         self.fireballs.update()
         for fb in self.fireballs:
             if fb.rect.x < (self.origin.rect.x - self.screen.get_width()) or \

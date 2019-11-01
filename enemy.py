@@ -51,6 +51,7 @@ class Enemy(Sprite):
         return file
 
     def check_player_collision(self):
+        # checks for collision with Mario
         if self.rect.colliderect(self.player.rect):
             # pts = [self.rect.topleft, self.rect.midtop, self.rect.topright]
             pts = []
@@ -65,6 +66,7 @@ class Enemy(Sprite):
             return True
 
     def set_killed(self):
+        # if collision detected set dead to true
         self.player_enemy_kill = True
         self.last_frame = pygame.time.get_ticks()
         self.shell_mode = True
@@ -164,10 +166,7 @@ class Goomba(Enemy):
         super().__init__(screen, image, x, y, player, floor, block, goombas, koopas)
 
     def crushed_death_animation(self):
-        print('ENEMY CRUSHED')
         time = pygame.time.get_ticks()
-        print(str(time))
-        print(str(self.last_frame))
         # Animate and keep on screen for half a second before killing sprite
         self.animator = Animate(self.crushed_images)
         if abs(time - self.last_frame) > 1000:

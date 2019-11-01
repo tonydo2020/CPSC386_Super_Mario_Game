@@ -1,3 +1,4 @@
+# All the constants used throughout the program
 SIZE_MULTIPLIER = 2.5
 BLACK = (0, 0, 0)
 

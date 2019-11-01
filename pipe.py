@@ -2,6 +2,7 @@ from block import Block
 
 
 class Pipe(Block):
+    # pipe class
     def __init__(self, x, y, image, screen, destination=None, spawn='player', horiz=False, music='BG-Main.wav'):
         super(Pipe, self).__init__(x, y, image, screen)
         self.destination = str(destination) if destination else None
@@ -11,7 +12,7 @@ class Pipe(Block):
 
     @classmethod
     def pipe_from_tmx_obj(cls, obj, screen):
-
+        # creates pipe object
         if 'destination' in obj.properties:
             destination = obj.properties['destination']
         else:
@@ -31,7 +32,7 @@ class Pipe(Block):
         return cls(obj.x, obj.y, obj.image, screen, destination=destination, spawn=spawn, horiz=horiz, music=music)
 
     def check_enter(self, other):
-
+        # check if you can enter the pipe
         if not self.destination:
             return None
         pts = [other.rect.topleft, other.rect.midtop, other.rect.topright]
